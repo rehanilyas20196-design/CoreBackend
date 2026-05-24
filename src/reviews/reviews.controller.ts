@@ -1,0 +1,17 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ReviewsService } from './reviews.service';
+
+@Controller('reviews')
+export class ReviewsController {
+  constructor(private readonly reviewsService: ReviewsService) {}
+
+  @Get(':productId')
+  async findByProduct(@Param('productId') productId: string) {
+    return this.reviewsService.findByProduct(parseInt(productId));
+  }
+
+  @Post()
+  async create(@Body() body: any) {
+    return this.reviewsService.create(body);
+  }
+}
