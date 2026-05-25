@@ -9,7 +9,7 @@ export class SupplierInquiriesService {
     item_name: string;
     details: string;
     quantity: number;
-    unit: string;
+    unit?: string;
   }) {
     const payload = {
       item_name: data.item_name,

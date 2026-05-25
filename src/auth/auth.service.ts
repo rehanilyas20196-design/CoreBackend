@@ -1,14 +1,32 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createHash } from 'crypto';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private supabase: SupabaseService) {}
+  private readonly pepper: string;
+
+  constructor(
+    private supabase: SupabaseService,
+    private configService: ConfigService,
+  ) {
+    this.pepper = this.configService.get<string>('PASSWORD_PEPPER') || 'BananaSecurePepper2024!';
+  }
+
+  private applyPepper(password: string): string {
+    const hash = createHash('sha256')
+      .update(password + this.pepper)
+      .digest('hex');
+    return `P${hash}`;
+  }
 
   async signUp(email: string, password: string, metadata?: { full_name?: string; joiningDate?: string }) {
+    const pepperedPassword = this.applyPepper(password);
+
     const { data, error } = await this.supabase.auth.signUp({
       email,
-      password,
+      password: pepperedPassword,
       options: {
         data: metadata || {},
       },
@@ -19,9 +37,11 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string) {
+    const pepperedPassword = this.applyPepper(password);
+
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email,
-      password,
+      password: pepperedPassword,
     });
 
     if (error) throw error;

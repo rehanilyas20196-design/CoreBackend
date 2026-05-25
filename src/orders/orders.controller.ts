@@ -1,11 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { CreateOrderDto, UpdateOrderStatusDto } from '../common/dto/order.dto';
+import { AdminGuard } from '../common/admin.guard';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
+  @UseGuards(AdminGuard)
   async findAll() {
     return this.ordersService.findAll();
   }
@@ -16,16 +19,18 @@ export class OrdersController {
   }
 
   @Post()
-  async create(@Body() body: any) {
+  async create(@Body() body: CreateOrderDto) {
     return this.ordersService.create(body);
   }
 
   @Patch(':id/status')
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
+  @UseGuards(AdminGuard)
+  async updateStatus(@Param('id') id: string, @Body() body: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(parseInt(id), body.status);
   }
 
   @Delete(':id')
+  @UseGuards(AdminGuard)
   async remove(@Param('id') id: string) {
     return this.ordersService.remove(parseInt(id));
   }
